@@ -1,0 +1,17 @@
+{
+  "name": "skill-prompt-review",
+  "version": "0.1.0",
+  "description": "Diagnoses a SKILL.md or an authored prompt against skill- and prompt-authoring best practices distilled from Anthropic, OpenAI, and Google guidance; returns a per-criterion PASS/FAIL report with evidence and a concrete fix. Run it as a fresh-eye pass.",
+  "author": {
+    "name": "codefoundry-io"
+  },
+  "license": "MIT",
+  "keywords": [
+    "skill",
+    "prompt",
+    "review",
+    "lint",
+    "prompt-engineering"
+  ],
+  "skills": "./skills/"
+}
