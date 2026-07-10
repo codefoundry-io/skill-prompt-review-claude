@@ -29,7 +29,7 @@ fresh-eye reviewer is the floor.
 This repo is a single-plugin Claude Code marketplace:
 
 ```
-/plugin marketplace add <github-owner>/<this-repo>     # or a local path to this repo
+/plugin marketplace add codefoundry-io/skill-prompt-review-claude
 /plugin install skill-prompt-review@skill-prompt-review
 ```
 

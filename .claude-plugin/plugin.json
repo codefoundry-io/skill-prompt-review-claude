@@ -6,6 +6,7 @@
     "name": "codefoundry-io"
   },
   "license": "MIT",
+  "repository": "https://github.com/codefoundry-io/skill-prompt-review-claude",
   "keywords": [
     "skill",
     "prompt",
