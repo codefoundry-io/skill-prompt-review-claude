@@ -1,0 +1,14 @@
+{
+  "name": "skill-prompt-review",
+  "owner": {
+    "name": "codefoundry-io"
+  },
+  "description": "Fresh-eye review for skills and prompts: PASS/FAIL/N-A against Anthropic/OpenAI/Google prompt-engineering guidance plus an AI-authorship lens, with a deterministic linter and scoreboard.",
+  "plugins": [
+    {
+      "name": "skill-prompt-review",
+      "source": "./",
+      "description": "Diagnoses a SKILL.md or an authored prompt against skill- and prompt-authoring best practices distilled from Anthropic, OpenAI, and Google guidance, plus an AI-authorship lens for AI-written prompts; returns a per-criterion PASS/FAIL/N-A report with evidence and a concrete fix. Run it as a fresh-eye pass."
+    }
+  ]
+}

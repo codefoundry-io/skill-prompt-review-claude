@@ -3,12 +3,13 @@
 The checks below hold for any skill or prompt regardless of vendor. Each names how
 it is checked: **[script]** for the mechanical checks `scripts/lint.py` runs, or
 **[judge]** for a reading a fresh-eye reviewer must do. Some are both — the script
-flags candidates, the reviewer confirms.
+flags candidates, the reviewer confirms. A `[script]` detector flags COMMON high-signal
+candidates, not an exhaustive set; a phrase it does not catch is the reviewer's `[judge]`
+catch, not a linter defect.
 
 Isolation (C3), trigger quality (C1), and single responsibility (C2) are the same
-concepts a dedicated sub-agent reviewer checks on sub-agent `.md` files. That kind of
-review is the canonical statement of those three; this file restates them
-for skills and prompts. If the shared concept itself changes, change it there first.
+concepts a dedicated sub-agent reviewer checks on sub-agent `.md` files; this file
+states them for skills and prompts.
 
 ## Contents
 - C0 Frontmatter loads (a SKILL.md must register)
@@ -35,9 +36,13 @@ for skills and prompts. If the shared concept itself changes, change it there fi
 Before any other check, a SKILL.md must actually LOAD, or every other criterion is
 moot. The script checks the structural basics — the file begins with `---` on line 1
 (no blank line or BOM before it), the block is closed, `name` and `description` are
-present, and `name` matches the containing directory exactly (case-sensitive; a
-mismatch silently prevents registration). The reviewer confirms the frontmatter is
-valid YAML beyond that shape. Fix: correct the delimiter, the YAML, or the
+present, and `name` matches the containing directory (case-sensitive). The Agent Skills
+spec requires that match (after NFKC normalization), so a distributed or API-uploaded
+skill with a mismatch is rejected; Claude Code's local filesystem loader is more lenient —
+it derives the command from the directory and treats `name` as an optional display
+default, so locally a mismatch changes only the display name. Flag a mismatch: it breaks
+the spec and distribution. The reviewer confirms the frontmatter is valid YAML beyond that
+shape. Fix: correct the delimiter, the YAML, or the
 name-to-folder match. A bare prompt has no frontmatter, so this applies to a SKILL.md
 only.
 
@@ -58,9 +63,9 @@ Strip the role line and headers; most of what remains should describe an input t
 target receives, an action it takes, or an output it returns. A brief reason,
 constraint, or example that makes an instruction land is welcome, not a violation.
 What to cut is the *world the target lives in* but does not act on: another tool's
-cost, its usage caps, a version history, an incident story. Fix: delete a world-fact,
+cost, its "usage caps", a version history, an incident story. Fix: delete a world-fact,
 or move a load-bearing one to where it is used. The script flags likely offenders
-(price and usage-limit phrasings); the reviewer decides whether a sentence earns its
+("price" and usage-limit phrasings); the reviewer decides whether a sentence earns its
 place.
 
 ## C4 — No priming: the pink-elephant check  [script] + [judge]
@@ -70,8 +75,14 @@ that narrates a past failure primes that failure. Fix: state the wanted behavior
 once, with its reason, and leave out the catalog of ways to get it wrong. Exception:
 when the target's own job is to recognize a hazard or a forbidden input (safety,
 security, compliance), naming it once — paired with the wanted action — is required,
-not priming. The script flags common excuse and past-incident phrasings; the
-reviewer catches subtler priming and confirms the exception.
+not priming. Second exception: a "Gotchas" or "Troubleshooting" section that states a
+known failure point as positive corrective guidance ("close the handle after reading —
+a common miss that leaks descriptors") is high-signal skill content, not priming — vendor
+skill-authoring guidance explicitly recommends capturing common mistakes as reusable
+context. What C4 flags is NARRATING the past failure ("the model kept forgetting to close
+the handle"), not documenting the correct behavior with its reason. The script flags common
+excuse and past-incident phrasings; the reviewer catches subtler priming and confirms the
+exceptions.
 
 ## C5 — Lean  [judge]
 Include only what the model does not already know; assume it is capable. Cut
@@ -100,7 +111,10 @@ not loop — that is a constraint to keep, not scaffolding to cut.
 Hardcoded dates, pinned version numbers, and pinned model names or codenames in a
 prompt go stale and read as noise, and a word that marks a release as recent ages the
 moment it is written. Phrase around the moving target — "the current flagship
-reasoning tier" rather than a pinned name. Provenance — a build date, a re-probed
+reasoning tier" rather than a pinned name. This criterion scores the TARGET's instruction
+text, not these vendor references (which name a model family or capability only to define
+when they apply); the linter flags candidates in any file, so confirm a reference-file hit
+is a real pin in instruction text, not scoping language. Provenance — a build date, a re-probed
 version — belongs in commit history, or a dedicated `changelog:` block in the
 frontmatter (read as a version ledger, not as live instruction); a rule or criterion
 body stays de-dated. Deprecated guidance belongs in an "old patterns" section, not
@@ -119,9 +133,13 @@ missing table of contents on a long reference; one-level-deep is the reviewer's 
 ## C10 — Positive framing  [script] + [judge]
 Tell the model what to do, not what to avoid — a positive instruction is clearer and
 side-steps the priming in C4. The flag is a dense run of "do not" / "never", not a
-single honest clarification ("dispatch to a separate agent, not the author's"). Fix:
-rewrite each prohibition as the wanted action; keep a named hazard only where C4's
-exception allows. The script reports negation density.
+single honest clarification ("dispatch to a separate agent, not the author's"). A
+scope-bounding constraint ("do exactly what is asked; do not add unrequested work or
+refactor beyond the task") is the vendor-endorsed scope-discipline lever (OpenAI O4,
+Anthropic A6) that counters a capable model's tendency to over-build — keep it; the flag is
+a DENSE RUN of prohibitions, not any single bounded one. Fix: rewrite each gratuitous
+prohibition as the wanted action; keep a named hazard only where C4's exception allows,
+and a scope bound where it earns its place. The script reports negation density.
 
 ## C11 — Distribution hygiene  [script] + [judge]
 A target shipped outside its home follows the consumer's language and mental model. A

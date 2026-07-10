@@ -1,9 +1,17 @@
 # Anthropic / Claude criteria
 
 Apply these when the target is a Claude SKILL.md (a claude host loads it) or a
-prompt written for a Claude model — in addition to `common.md`. Sources: the
-Anthropic Agent Skills best-practices, the per-model prompting pages, and the
-context-engineering guidance.
+prompt written for a Claude model — in addition to `common.md`. A1 (frontmatter) and A2
+(progressive disclosure) are claude-HOST STRUCTURE criteria — check them on any claude-host
+SKILL.md. A3-A6 are BODY-as-prompt criteria: they govern a bare Claude prompt and, because
+a claude-host body is itself a Claude prompt, that body too. Within A4, split by target as
+the OpenAI/Gemini preambles do for O1/O2/G1: for a non-API target (a claude-host SKILL body
+or a CLI prompt) the CONFIG subpart — the effort setting, `budget_tokens`, last-turn prefill
+— is N-A, since a SKILL body cannot set them; only A4's prompt-text half stays live (do not
+echo internal reasoning; the `think`/`ultrathink` harness keywords). Full A4 applies to a
+bare Claude prompt that is an actual API call. A7 applies only where the target defines or
+documents tools. Sources: the Anthropic Agent Skills best-practices, the per-model prompting
+pages, and the context-engineering guidance.
 
 ## Contents
 - A1 SKILL.md frontmatter conforms to the spec
@@ -16,11 +24,12 @@ context-engineering guidance.
 
 ## A1 — SKILL.md frontmatter conforms to the spec  [judge]
 `name`: lowercase letters, numbers, hyphens; within the length limit; matches the
-containing directory exactly (a mismatch silently blocks loading — see C0); not a
-reserved word ("anthropic", "claude"); prefer a gerund ("processing-pdfs") over a vague
-noun ("helper"). The reserved-word rule is BE, not CONTAIN: the name must not be exactly
-"anthropic" or "claude"; containing one as a substring is fine (`my-claude-helper`
-registers). `description`: third person, states what it does *and* when to use it,
+containing directory (the Agent Skills spec requires it — a distributed/uploaded skill is
+rejected on mismatch; a local Claude Code skill still loads, deriving its command from the
+directory — see C0); and must not CONTAIN the reserved words "anthropic" or "claude" anywhere in it — the Agent Skills spec rejects
+a name that contains either as a substring (`claude-tools` and `anthropic-helper` are both
+invalid), not only the bare words; prefer a gerund ("processing-pdfs") over a vague noun
+("helper"). `description`: third person, states what it does *and* when to use it,
 within the length limit, no XML tags. These two fields are the whole trigger signal;
 load-ability itself (`---` on line 1, valid YAML) is C0.
 
@@ -59,9 +68,8 @@ prefix (role, policy, tool schemas) stable and place the cache breakpoint after 
 prompt that churns its stable prefix defeats the cache (the Claude side of O6).
 
 ## A6 — Refactor prompts built for older models  [judge]
-The latest Claude models need less scaffolding: they orchestrate sub-agents
-natively, follow brief instructions, and design frontends well without heavy
-prompting. A prompt carried over from an older model often over-specifies — flag
+Current Claude models need less scaffolding: they orchestrate sub-agents
+natively and follow brief instructions. A prompt carried over from an older model often over-specifies — flag
 aggressive anti-laziness language, blanket "default to tool X" rules, and long
 prescriptive plans, and give the goal, success criteria, and constraints instead of a
 hand-written step list — rely on the effort setting for depth, not on a "think harder"

@@ -112,6 +112,108 @@ with tempfile.TemporaryDirectory() as td:
     ap = _write(td, "ap/references/r.md", "\n".join(["don’t do this"] * 5 + [f"x{i}" for i in range(30)]))
     check(any("negation density" in c for c, _, _ in lint.lint(ap)), "C10 counts a curly-apostrophe don't")
 
+    # --- C0 full-value name match: a trailing token must NOT pass folder-match ---
+    tj = _write(td, "goodname/SKILL.md", "---\nname: goodname trailing\ndescription: does x, and when\n---\n\nbody\n")
+    check(lint.frontmatter_load_issue(tj.read_text(), tj) is not None, "C0: name with a trailing token -> load issue (full-value match, not first token)")
+
+    # --- C8: tool/runtime version pins beyond three-part semver (Python 3.12, Node 22) ---
+    tv = _write(td, "tv/references/r.md", "Requires Python 3.12 and Node 22 on the host.\n")
+    check(any(crit.startswith("C8 version") for crit, _, _ in lint.lint(tv)), "C8 flags a tool/runtime version pin (Python 3.12 / Node 22)")
+
+    # --- C8: hyphen-suffixed o-series model pins (o4-mini) flagged; O1 label + bare o3 NOT ---
+    osx = _write(td, "osx/references/r.md", "route this to o4-mini for speed\n")
+    check(any("model pin" in c for c, _, _ in lint.lint(osx)), "C8 flags a hyphen-suffixed o-series pin (o4-mini)")
+    # R4 codex-lint: a bare lowercase o-series IS a [script] candidate now; uppercase 'O1' labels are NOT.
+    olabel = _write(td, "ol/references/r.md", "See O1 and O2 above (criterion labels).\n")
+    check(not any("model pin" in c for c, _, _ in lint.lint(olabel)), "C8 does NOT over-match uppercase 'O1'/'O2' criterion labels")
+    obare = _write(td, "ob/references/r.md", "route this to o3 for cost.\n")
+    check(any("model pin" in c for c, _, _ in lint.lint(obare)), "C8 flags a bare lowercase o-series pin (o3)")
+
+    # --- R4 codex-lint: C8 scans the shipped DESCRIPTION, not just the body ---
+    descpin = _write(td, "dp/SKILL.md", "---\nname: dp\ndescription: routes to gpt-4o for X, and when to use it\n---\n\nbody\n")
+    check(any(c.startswith("C8") for c, _, _ in lint.lint(descpin)), "C8 flags a model pin in the frontmatter description")
+    descclean = _write(td, "dc/SKILL.md", "---\nname: dc\ndescription: dispatches to codex, gemini, or claude, and when\n---\n\nbody\n")
+    check(not any(c.startswith("C8") for c, _, _ in lint.lint(descclean)), "C8 does NOT flag bare CLI names (codex/gemini/claude, no version) in a description")
+
+    # --- R4 codex-lint: context-anchored bare current-year (not any 4-digit number) ---
+    byear = _write(td, "by/references/r.md", "assume the current year is 2026 for grounding.\n")
+    check(any(c.startswith("C8 time") for c, _, _ in lint.lint(byear)), "C8 flags a context-anchored bare year ('current year is 2026')")
+    noyear = _write(td, "ny/references/r.md", "see issue 2026 and read line 2026 in the log.\n")
+    check(not any(c.startswith("C8 time") for c, _, _ in lint.lint(noyear)), "C8 does NOT flag a bare 2026 with no temporal anchor")
+
+    # --- R5 codex-lint: C0 must NOT false-fail a valid block-scalar / indented description ---
+    blockdesc = _write(td, "bd/SKILL.md", "---\nname: bd\ndescription: |\n  A multi-line description\n  spanning lines, with when to use it.\n---\n\nbody\n")
+    check(lint.frontmatter_load_issue(blockdesc.read_text(), blockdesc) is None, "C0: block-scalar (|) description -> no false load-fail")
+    plaindesc = _write(td, "pd2/SKILL.md", "---\nname: pd2\ndescription:\n  indented description on the next line, and when\n---\n\nbody\n")
+    check(lint.frontmatter_load_issue(plaindesc.read_text(), plaindesc) is None, "C0: indented-continuation description -> no false load-fail")
+    emptydesc = _write(td, "ed/SKILL.md", "---\nname: ed\ndescription:\n---\n\nbody\n")
+    check(lint.frontmatter_load_issue(emptydesc.read_text(), emptydesc) is not None, "C0: truly empty description -> load issue")
+
+    # --- R5 codex-lint: C4 [script] must flag common excuse + past-failure narratives ---
+    c4a = _write(td, "c4a/references/r.md", "The model kept forgetting to close the file. Do not skip this because it previously failed.\n")
+    check(any(c.startswith("C4") for c, _, _ in lint.lint(c4a)), "C4 flags 'kept forgetting' / 'previously failed' / 'do not skip because'")
+    c4b = _write(td, "c4b/references/r.md", "There is no excuse and it is not a good reason to omit the step.\n")
+    check(any(c.startswith("C4") for c, _, _ in lint.lint(c4b)), "C4 flags 'no excuse' / 'not a good reason'")
+
+    # --- R7 codex-lint: C8 recency words, anchored to a release/model/version noun ---
+    rec = _write(td, "rec/references/r.md", "route to the newest model for this.\n")
+    check(any(c.startswith("C8") for c, _, _ in lint.lint(rec)), "C8 flags a recency word anchored to a release noun ('newest model')")
+    recn = _write(td, "recn/references/r.md", "a new file and a recent commit are in the log.\n")
+    check(not any(c.startswith("C8") for c, _, _ in lint.lint(recn)), "C8 does NOT flag 'new file' / 'recent commit' (no release noun)")
+
+    # --- R7 codex-lint: AA2 general 'Let me ...' opener (not only 'let me help') ---
+    lm = _write(td, "lm/references/r.md", "Let me analyze this input for you.\n")
+    check(any(c.startswith("AA2") for c, _, _ in lint.lint(lm)), "AA2 flags a general 'Let me ...' opener")
+
+    # --- R7 codex-lint: AA5 flags decorative dingbats, NOT functional ✓/✗ or → arrows ---
+    ding = _write(td, "dg/references/r.md", "Section ❖ header with ✦ decoration.\n")
+    check(any(c.startswith("AA5") for c, _, _ in lint.lint(ding)), "AA5 flags decorative dingbats (❖ ✦)")
+    fglyph = _write(td, "fg/references/r.md", "status ✓ done, ✗ failed, → next step.\n")
+    check(not any(c.startswith("AA5") for c, _, _ in lint.lint(fglyph)), "AA5 does NOT flag functional ✓/✗ or a → arrow")
+
+    # --- R9 codex-lint: a `backticked` model/version id is scoping language (naming it) and is
+    #     suppressed deterministically; the SAME id UNbacked is a real pin and still flags. ---
+    bt = _write(td, "bt/references/r.md", "the `Gemini 2.5-series` control vs `thinking_level`.\n")
+    check(not any("model pin" in c for c, _, _ in lint.lint(bt)), "C8 does NOT flag a backticked `Gemini 2.5-series` (scoping language)")
+    ubt = _write(td, "ubt/references/r.md", "always route to Gemini 2.5-series for this.\n")
+    check(any("model pin" in c for c, _, _ in lint.lint(ubt)), "C8 flags an UNbacked 'Gemini 2.5-series' pin")
+
+    # --- C3: cost/usage-limit phrasings the criterion names (price, cost, usage cap/limit) ---
+    c3 = _write(td, "c3/references/r.md", "The price is high and there is a usage cap per account.\n")
+    check(any("world-fact" in c for c, _, _ in lint.lint(c3)), "C3 flags 'price' / 'usage cap' phrasings")
+
+    # --- AA (AI-authorship signature): chat-register detectors + no arrow/em-dash false-flag ---
+    aa = _write(td, "aa/references/r.md",
+                "Great question! As an AI, I hope this helps.\n"
+                "Analyze the file we discussed, as you requested.\n"
+                "You might want to maybe validate the input 🎉\n")
+    caa = [c for c, _, _ in lint.lint(aa)]
+    check(any(c.startswith("AA1") for c in caa), "AA1 flags authoring-conversation carryover ('we discussed' / 'as you requested')")
+    check(any(c.startswith("AA2") for c in caa), "AA2 flags chat-register padding ('Great question!' / 'as an AI')")
+    check(any(c.startswith("AA3") for c in caa), "AA3 flags a sycophantic softener ('you might want to')")
+    check(any(c.startswith("AA5") for c in caa), "AA5 flags an emoji")
+    arrow = _write(td, "ar/references/r.md", "A verdict flips FAIL → PASS across the em-dash — this round.\n")
+    check(not any(c.startswith("AA5") for c, _, _ in lint.lint(arrow)), "AA5 does NOT flag → arrow or an em-dash as an emoji")
+
+    # --- R5 codex-lint: a QUOTED example phrase is scoping language (a reference teaching a
+    #     rule), not real prompt residue — suppressed; the SAME phrase unquoted still fires. ---
+    quoted = _write(td, "qx/references/r.md", 'Flag conversational openers like "Great question!" and "as you requested".\n')
+    check(not any(c.startswith("AA") for c, _, _ in lint.lint(quoted)), "AA does NOT flag a double-quoted example phrase (scoping language)")
+    unq = _write(td, "uq/references/r.md", "Great question! As you requested, here is the plan.\n")
+    check(any(c.startswith("AA") for c, _, _ in lint.lint(unq)), "AA still flags the same phrase UNQUOTED (real residue)")
+
+    # --- AA2 (R3 codex-lint): apology + 'I want to be careful here' were named but not detected ---
+    aa2b = _write(td, "aa2b/references/r.md",
+                  "I'm sorry, I want to be careful here about the config.\n" + "\n".join(f"x{i}" for i in range(4)))
+    check(any(c.startswith("AA2") for c, _, _ in lint.lint(aa2b)), "AA2 flags apology 'sorry' / 'I want to be careful here'")
+
+    # --- AA6 (R3 codex-lint): body-language scan — non-consumer-language script in the BODY,
+    #     not just the description (C11). A candidate; quoted examples are the reviewer's call. ---
+    aa6 = _write(td, "aa6/references/r.md", "# ref\nSome English guidance.\n분석 대상은 한국어 본문.\n")
+    check(any(c.startswith("AA6") for c, _, _ in lint.lint(aa6)), "AA6 flags non-consumer-language (Korean) in the body")
+    clean6 = _write(td, "cl6/references/r.md", "# ref\nAll English here, arrows → and an em-dash — included.\n")
+    check(not any(c.startswith("AA6") for c, _, _ in lint.lint(clean6)), "AA6 does NOT flag an all-English body (arrows/em-dash are not scripts)")
+
 if FAILS:
     print(f"RED — {len(FAILS)} failing test(s):")
     for m in FAILS:
