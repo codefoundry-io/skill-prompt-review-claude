@@ -242,7 +242,11 @@ def lint(path: Path, explicit_kind: str | None = None) -> list[tuple[str, str, l
     # C11 — distribution hygiene: non-Latin-script text in the description. Matches
     # script ranges (Hangul, Japanese kana, CJK, Cyrillic, Arabic), not punctuation
     # like em-dashes or curly quotes that legitimately appear in English prose.
-    nonlatin = re.findall(r"[\uac00-\ud7a3\u3040-\u30ff\u4e00-\u9fff\u0370-\u03ff\u0400-\u04ff\u0590-\u05ff\u0600-\u06ff\u0900-\u097f\u0e00-\u0e7f]+", desc)
+    # Trigger keywords are EXEMPT: a skill's triggers (typically quoted in the description)
+    # may be in the user's language even when it ships, because they must match how the user
+    # phrases the request. Strip quoted/backticked spans first; flag only non-Latin PROSE drift.
+    desc_prose = re.sub(r'"[^"]*"|\u201c[^\u201d]*\u201d|`[^`]*`', "", desc)
+    nonlatin = re.findall(r"[\uac00-\ud7a3\u3040-\u30ff\u4e00-\u9fff\u0370-\u03ff\u0400-\u04ff\u0590-\u05ff\u0600-\u06ff\u0900-\u097f\u0e00-\u0e7f]+", desc_prose)
     if nonlatin:
         out.append(("C11 description language",
                     f"description carries {len(nonlatin)} non-Latin-script token(s) "
@@ -297,12 +301,16 @@ def lint(path: Path, explicit_kind: str | None = None) -> list[tuple[str, str, l
     if emoji:
         add("AA5 decoration overload",
             f"{len(emoji)} line(s) with emoji/decorative glyphs — keep formatting functional", emoji)
-    # AA6 — body-language: the same non-Latin script ranges C11 checks in the description,
-    # but over the whole BODY (an AI authors in the chat's language, not the consumer's). A
-    # candidate — a body that intentionally quotes another language is the reviewer's call.
-    aa6 = lines_matching(
-        body,
-        r"[가-힣぀-ヿ一-鿿Ͱ-ϿЀ-ӿ֐-׿؀-ۿऀ-ॿ฀-๿]")
+    # AA6 — body-language: non-Latin script in the BODY (an AI authors in the chat's
+    # language, not the consumer's). Quoted trigger phrases / example user-input strings are
+    # EXEMPT (a skill lists the phrases that fire it, which may be in the user's language);
+    # flag only unquoted PROSE. Strip BALANCED quote/backtick pairs PER LINE — the same
+    # failure mode as C11's description strip: an unbalanced quote fails toward FLAGGING,
+    # never toward a silent exempt (a body-start parity count would invert on a lone `"`).
+    _aa6_quoted = re.compile(r'"[^"\n]*"|“[^”\n]*”|`[^`\n]*`')
+    _aa6_script = re.compile(r"[가-힣぀-ヿ一-鿿Ͱ-ϿЀ-ӿ֐-׿؀-ۿऀ-ॿ฀-๿]")
+    aa6 = [(i, ln.strip()) for i, ln in enumerate(body.splitlines(), 1)
+           if _aa6_script.search(_aa6_quoted.sub("", ln))]
     if aa6:
         add("AA6 body language",
             f"{len(aa6)} body line(s) carry non-consumer-language script — write shipped text in the consumer's language", aa6)

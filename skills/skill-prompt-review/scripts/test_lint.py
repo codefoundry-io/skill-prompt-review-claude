@@ -214,6 +214,30 @@ with tempfile.TemporaryDirectory() as td:
     clean6 = _write(td, "cl6/references/r.md", "# ref\nAll English here, arrows → and an em-dash — included.\n")
     check(not any(c.startswith("AA6") for c, _, _ in lint.lint(clean6)), "AA6 does NOT flag an all-English body (arrows/em-dash are not scripts)")
 
+    # --- Trigger-language exemption: a skill's TRIGGER keywords/phrases are intentionally in
+    #     the user's language even when it ships (they must match how the user phrases the
+    #     request), so the language check exempts QUOTED trigger text and flags only PROSE drift.
+    #     AA6 (body): a quoted trigger-phrase line is EXEMPT; unquoted prose still flags.
+    trig_body = _write(td, "tb/SKILL.md", FM.format(name="tb") + '## When to use\n- "세션정리"\n- "compact 하자"\n')
+    check(not any(c.startswith("AA6") for c, _, _ in lint.lint(trig_body)),
+          "AA6 does NOT flag a QUOTED trigger phrase in the body (intentional user-language trigger)")
+    prose_body = _write(td, "pb/SKILL.md", FM.format(name="pb") + "This carries 한국어 산문 unquoted in the body.\n")
+    check(any(c.startswith("AA6") for c, _, _ in lint.lint(prose_body)),
+          "AA6 still flags UNQUOTED non-Latin prose in the body")
+    # C11 (description): quoted trigger keywords are EXEMPT; unquoted description prose flags.
+    trig_desc = _write(td, "trd/SKILL.md", '---\nname: trd\ndescription: Use when the user says "세션정리" or "정리하자", the trigger phrases.\n---\n\nbody\n')
+    check(not any(c.startswith("C11") for c, _, _ in lint.lint(trig_desc)),
+          "C11 does NOT flag QUOTED trigger keywords in the description")
+    prose_desc = _write(td, "prd/SKILL.md", "---\nname: prd\ndescription: 한국어 설명 without quotes, and when to use it.\n---\n\nbody\n")
+    check(any(c.startswith("C11") for c, _, _ in lint.lint(prose_desc)),
+          "C11 still flags UNQUOTED non-Latin prose in the description")
+    # AA6 robustness: an earlier UNBALANCED quote (e.g. 6" inches) must NOT exempt a later
+    # unquoted non-Latin prose line — the per-line balanced strip fails toward flagging,
+    # unlike a body-start parity count that a lone " would invert for the whole remainder.
+    unbal = _write(td, "unbal/SKILL.md", FM.format(name="unbal") + 'The screen is 6" wide.\n한국어 산문 line here.\n')
+    check(any(c.startswith("AA6") for c, _, _ in lint.lint(unbal)),
+          "AA6 flags non-Latin prose AFTER an unbalanced quote (no body-start-parity false-exempt)")
+
 if FAILS:
     print(f"RED — {len(FAILS)} failing test(s):")
     for m in FAILS:

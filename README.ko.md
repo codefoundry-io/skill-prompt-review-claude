@@ -110,6 +110,10 @@ cp -r skills/skill-prompt-review <내-저장소>/.claude/skills/  # 프로젝트
    스킬이 그것들을 잡고 깨끗한 대조군에는 조용한지 확인하세요. `scripts/test_lint.py`,
    `scripts/test_score.py`, `tests/test_lint_fixtures.py`가 결정론 절반에 대한
    그 점검입니다.
+7. **선택적 수리(repair).** 리포트 후, 호출자는 tiered 수리를 제안할 수 있습니다 —
+   FAIL들을 정확한 `old → new` 교체로 스펙화하고, LOW-tier writer 서브에이전트로
+   적용, MID-tier reviewer 서브에이전트로 검증, throwaway 스펙 삭제, 편집된 대상을
+   재리뷰. `references/repair.md` 참고.
 
 ## 리포트 형식
 

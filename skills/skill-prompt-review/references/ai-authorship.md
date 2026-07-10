@@ -67,7 +67,10 @@ bolded key term is functional, a bolded whole sentence is decoration).
 An AI authors in whatever language the conversation is running in. A prompt meant for an
 English-consuming worker, or a distributed consumer, must not inherit the authoring
 chat's language anywhere in its body (C11 governs the description specifically; this
-extends it to the whole artifact). Write the shipped text in the consumer's language. The
-linter's `[script]` candidate is a non-Latin-script scan of the body; a Latin-script drift
+extends it to the whole artifact). Write the shipped PROSE in the consumer's language.
+**Quoted trigger phrases and example user-input strings are exempt** — a skill lists the
+phrases that fire it, which may legitimately be in the user's language; the check is on
+unquoted prose, not on the quoted triggers/examples the skill teaches. The linter's
+`[script]` candidate is an unquoted non-Latin-script scan of the body; a Latin-script drift
 (a stray French or Spanish line in an English body) has no crisp signature and is the
 reviewer's `[judge]` catch.

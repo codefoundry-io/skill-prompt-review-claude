@@ -113,6 +113,10 @@ After install, in a normal turn, ask the assistant to review a skill or prompt �
    and confirm the skill catches them and stays quiet on a clean control.
    `scripts/test_lint.py`, `scripts/test_score.py`, and `tests/test_lint_fixtures.py`
    are that check for the deterministic half.
+7. **Repair, optionally.** After the report, the caller may offer a tiered fix: spec the
+   FAILs as exact `old → new` replacements, apply them with a low-tier writer sub-agent,
+   verify with a mid-tier reviewer sub-agent, delete the throwaway spec, then re-review the
+   edited target — see `references/repair.md`.
 
 ## Report format
 

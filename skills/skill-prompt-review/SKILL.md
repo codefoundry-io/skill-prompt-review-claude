@@ -26,8 +26,6 @@ The criteria live in `references/`, split common vs per-vendor:
   conversation carryover, chat-register padding, sycophantic softeners, confabulated
   specifics, decoration overload, and language drift.
 
-This file is the method for running the review; the reference files carry the detail.
-
 ## Run this as a fresh eye
 
 The one rule that makes this work: **do not review your own draft.** An author reads their
@@ -42,11 +40,20 @@ reviewer. A FAIL from any one family stands — different families catch differe
 single fresh-eye reviewer is the floor and is enough for a quick check. This skill mandates
 no fixed amount of machinery; scale it to what the target is worth.
 
+Cross-family reviewers do NOT have this skill installed, so hand each one the rules INLINE —
+the relevant `references/` criteria (plus any project doc rules), the target, and the linter
+output; "review this" alone falls back on the reviewer's priors. Fan-out is best-effort: run
+the families you can reach, skip the rest (log which ran); the single fresh-eye is the floor,
+so a missing family degrades the review, not blocks it.
+
 ## Isolate, fence, adjudicate
 
 - **Strip the context.** Give each reviewer the target and the criteria, nothing else — no
   fix history, no prior verdicts, no "already confirmed safe" note. Those steer every
-  reviewer into the author's frame, the exact blind spot a fresh eye exists to break.
+  reviewer into the author's frame, the exact blind spot a fresh eye exists to break. Strip
+  the *process* context too — spawn each reviewer fresh, not inheriting the orchestrator's
+  conversation. Some hosts fork the parent's full history by DEFAULT (codex `spawn_agent`
+  → pass `fork_context=false`; a claude Agent is fresh already), re-polluting the fresh eye.
 - **Split and isolate.** Decompose a large target into fragments that stand alone (one
   skill file; one build/command block; a description-body pair) and review each on its own.
   Review the artifact's final state, not a diff wrapped in the story of how it got there.
@@ -184,3 +191,13 @@ average a rate across model families (a FAIL from any one family stands — aver
 the one catch that matters); and give no A–F grade. The value is a legible read on whether
 a round still moves the needle — it quantifies the plateau this skill says to stop at — not
 a truer measure of the prompt's quality.
+
+## Repair the target (optional)
+
+This skill REPORTS; it does not edit. When the report has fixable FAILs, OFFER the user an
+optional repair phase — a tiered spec → implement → review loop that mechanically applies
+the exact `old → new` fixes with a LOW-tier writer sub-agent, verifies them with a MID-tier
+reviewer sub-agent, deletes the throwaway spec, then re-reviews the edited target (the "do
+not review your own draft" rule applies to a repair too). The orchestrator routes each role
+and pins no model id. Recommend repair for the mechanical fixes; leave judgment-heavy
+rewrites to the author. Full flow + tier discipline: `references/repair.md`.

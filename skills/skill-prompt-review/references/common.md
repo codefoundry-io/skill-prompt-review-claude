@@ -145,10 +145,14 @@ and a scope bound where it earns its place. The script reports negation density.
 A target shipped outside its home follows the consumer's language and mental model. A
 distributed description in a non-consumer language mis-targets the trigger; internal
 file paths and local jargon leak context the consumer cannot use. This applies to a
-target that ships — a purely local skill may keep local framing. Fix: for a shipped
-target, translate to the consumer's language and replace internal references with
-consumer-facing ones. The script flags non-Latin-script text in a description; the
-reviewer judges whether that language is wrong for the consumer.
+target that ships — a purely local skill may keep local framing. **Trigger keywords are
+exempt**: the phrases a skill fires on (usually quoted in the description) may be in the
+user's language even when the skill ships, because they must match how the user phrases
+the request — so the check is on the description's PROSE, not its trigger keywords. Fix:
+for a shipped target, translate the PROSE to the consumer's language and replace internal
+references with consumer-facing ones, but keep the trigger keywords in whatever language
+the user types. The script strips quoted spans and flags non-Latin PROSE only; the
+reviewer judges whether that prose language is wrong for the consumer.
 
 ## C12 — Tool and skill authoring universals  [judge]
 Where the target defines or invokes tools: names are clear and each description says

@@ -1,6 +1,6 @@
 {
   "name": "skill-prompt-review",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Diagnoses a SKILL.md or an authored prompt against skill- and prompt-authoring best practices distilled from Anthropic, OpenAI, and Google guidance, plus an AI-authorship lens for AI-written prompts; returns a per-criterion PASS/FAIL/N-A report with evidence and a concrete fix. Run it as a fresh-eye pass.",
   "author": {
     "name": "codefoundry-io"
