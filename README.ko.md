@@ -10,7 +10,9 @@
 점검입니다. `SKILL.md`나 프롬프트를 읽어, Anthropic·OpenAI·Google의 자체
 프롬프트 엔지니어링 가이드에서 추출한 체크리스트([docs/RESEARCH.md](docs/RESEARCH.md)
 참고)와 대조하고, 기준별 PASS / FAIL / N-A 리포트를 근거와 구체적 수정안과 함께
-돌려줍니다.
+돌려줍니다. 이어서 선택적으로 기계적 수정을 **직접 고쳐줄** 수도 있습니다 — tiered
+결정론 루프(저티어 writer가 정확한 `old → new`를 적용, 중간티어 reviewer가 검증, 이후
+수정된 대상을 재리뷰)라서, 리뷰 결과가 사람이 다시 타이핑하지 않아도 편집으로 이어집니다.
 
 Claude Code에서 동작합니다: 대상을 주면 텍스트를 심사합니다. 대상을 **실행하지 않으며**,
 통과가 곧 보안 승인은 아닙니다.
@@ -21,7 +23,10 @@ Claude Code에서 동작합니다: 대상을 주면 텍스트를 심사합니다
 빈틈에 스스로 의도를 채워 넣습니다. 리뷰는 대상을 쓰지 않은 다른 눈 — 별도의 fresh-eye 서브에이전트(자기 세션이 아닌 `Agent`) — 에게
 맡기세요. 배포할 것이라면 리뷰를 여러 모델 패밀리(Claude 계열, OpenAI 계열, Google
 계열)로 펼쳐 종합하세요. 어느 한 패밀리의 FAIL이라도 유효합니다 — 패밀리마다 놓치는
-지점이 다르기 때문입니다. 단일 fresh-eye 리뷰어가 최소선입니다.
+지점이 다르기 때문입니다. 단일 fresh-eye 리뷰어가 최소선입니다. fresh는 리뷰어만이 아니라
+*컨텍스트*가 fresh해야 한다는 뜻입니다: 각 리뷰어를 오케스트레이터의 대화를 상속하지 않은
+채로 spawn하세요 — 부모의 전체 history를 지닌 spawn 에이전트는 더 이상 fresh eye가
+아닙니다(일부 host는 그 history를 기본 fork하므로 fresh/non-forked 컨텍스트를 명시 요청).
 
 cross-family 리뷰를 대신 돌려줄 도구가 필요하다면 **[triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)**를 쓰세요 — Claude Code 플러그인으로, codex·gemini·antigravity 단발 디스패처와 `triad-cross-family-review` 스킬을 함께 제공합니다. `/plugin marketplace add codefoundry-io/triad-dispatch`와 `/plugin install triad-dispatch@triad-dispatch`로 설치한 뒤, 이 스킬의 리뷰를 각 패밀리에 돌려 종합하세요.
 

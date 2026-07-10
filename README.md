@@ -10,7 +10,10 @@ author, re-reading its own text, cannot see any of it. `skill-prompt-review` is 
 check. It reads a `SKILL.md` or a prompt, compares it against a checklist distilled from
 Anthropic, OpenAI, and Google's own prompt-engineering guidance (see
 [docs/RESEARCH.md](docs/RESEARCH.md)), and returns a per-criterion PASS / FAIL / N-A report
-with evidence and a concrete fix.
+with evidence and a concrete fix. It can then, optionally, **repair** the mechanical fixes
+for you — a tiered, deterministic spec → apply → verify loop (a low-tier writer applies the
+exact `old → new` edits, a mid-tier reviewer checks them, then the edited target is
+re-reviewed), so a review turns into edits without you retyping them.
 
 It runs on Claude Code: you give it a target and it reviews the text. It does **not** run the
 target, and a clean pass is not a security clearance.
@@ -22,7 +25,10 @@ own intent into the gaps. Hand the review to a separate fresh-eye sub-agent (an 
 the target. For anything you will ship, fan the review out across model families (a
 Claude-family, an OpenAI-family, and a Google-family reviewer) and consolidate: a FAIL
 from any one family stands, because different families catch different misses. A single
-fresh-eye reviewer is the floor.
+fresh-eye reviewer is the floor. Fresh means a fresh *context*, not only a fresh reviewer:
+spawn each reviewer without inheriting the orchestrator's conversation — a spawned agent
+carrying the parent's full history is no longer a fresh eye (some hosts fork that history by
+default, so ask for a fresh/non-forked context explicitly).
 
 Want a tool that runs the cross-family pass for you? **[triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)** — a Claude Code plugin — bundles single-shot dispatchers to codex, gemini, and antigravity plus a `triad-cross-family-review` skill. Install it with `/plugin marketplace add codefoundry-io/triad-dispatch` and `/plugin install triad-dispatch@triad-dispatch`, then hand this skill's review to each family and consolidate.
 
