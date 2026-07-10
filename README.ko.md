@@ -23,6 +23,8 @@ Claude Code에서 동작합니다: 대상을 주면 텍스트를 심사합니다
 계열)로 펼쳐 종합하세요. 어느 한 패밀리의 FAIL이라도 유효합니다 — 패밀리마다 놓치는
 지점이 다르기 때문입니다. 단일 fresh-eye 리뷰어가 최소선입니다.
 
+cross-family 리뷰를 대신 돌려줄 도구가 필요하다면 **[triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)**를 쓰세요 — Claude Code 플러그인으로, codex·gemini·antigravity 단발 디스패처와 `triad-cross-family-review` 스킬을 함께 제공합니다. `/plugin marketplace add codefoundry-io/triad-dispatch`와 `/plugin install triad-dispatch@triad-dispatch`로 설치한 뒤, 이 스킬의 리뷰를 각 패밀리에 돌려 종합하세요.
+
 ## 어디에 쓰나 (권장 워크플로우)
 
 이 스킬은 *심사*하지, 생성하지 않습니다. 초안을 만든 뒤 **다듬는 단계**로 쓰는 것이

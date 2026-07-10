@@ -24,6 +24,8 @@ Claude-family, an OpenAI-family, and a Google-family reviewer) and consolidate: 
 from any one family stands, because different families catch different misses. A single
 fresh-eye reviewer is the floor.
 
+Want a tool that runs the cross-family pass for you? **[triad-dispatch](https://github.com/codefoundry-io/triad-dispatch)** — a Claude Code plugin — bundles single-shot dispatchers to codex, gemini, and antigravity plus a `triad-cross-family-review` skill. Install it with `/plugin marketplace add codefoundry-io/triad-dispatch` and `/plugin install triad-dispatch@triad-dispatch`, then hand this skill's review to each family and consolidate.
+
 ## Where this fits (recommended workflow)
 
 This skill *reviews* — it does not generate. Use it as the refinement step after you have a
