@@ -1,5 +1,7 @@
 # skill-prompt-review (Claude Code edition)
 
+> **English** · [한국어](README.ko.md)
+
 **A prompt or a skill has no unit tests — so there is no automatic signal when one is
 wrong.** AI-authored prompts fail in a characteristic way: they carry the authoring
 conversation's framing into the artifact, bake in dates and one-off specifics, state
@@ -21,6 +23,25 @@ the target. For anything you will ship, fan the review out across model families
 Claude-family, an OpenAI-family, and a Google-family reviewer) and consolidate: a FAIL
 from any one family stands, because different families catch different misses. A single
 fresh-eye reviewer is the floor.
+
+## Where this fits (recommended workflow)
+
+This skill *reviews* — it does not generate. Use it as the refinement step after you have a
+draft:
+
+- **Creating a skill?** Scaffold the `SKILL.md` first with Claude Code's **skill-creator** plugin (`/plugin install skill-creator@claude-plugins-official`), then run this
+  skill as a fresh-eye review before you ship. Let the creator write the structure; let this
+  skill find what the author cannot see.
+- **Writing a prompt?** Draft the first version yourself, or have an AI write a first pass —
+  then use this skill to tighten and refine it. An AI-written first draft is exactly what the
+  `references/ai-authorship.md` (AA1-AA6) lens is built to clean up.
+- **Write the prompt in English.** The criteria and the linter presuppose English; author the
+  shipped prompt in English and keep non-English text only where it is genuinely the
+  consumer's language (C11, AA6).
+
+Generation and review stay separate on purpose: an author — human or AI — cannot see its own
+`[judge]`-level defects. Run the review with a *fresh eye* (a separate agent, ideally across
+model families), never in the same breath that wrote the draft.
 
 ## Install
 
